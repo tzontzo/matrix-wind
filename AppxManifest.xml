@@ -24,8 +24,7 @@
                       SmallLogo="res/icon/windows/Square71x71Logo.scale-100.png"
                       Description="Matrix LMS"
                       BackgroundColor="#AA00AA"
-                      ForegroundText="light"
-      >
+                      ForegroundText="light"/>
         <DefaultTile WideLogo="res/icon/windows/Wide310x150Logo.scale-100.png" />
         <SplashScreen Image="res/screen/windows/SplashScreen.scale-100.png" />
       </VisualElements>
