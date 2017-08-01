@@ -2,13 +2,14 @@
 <widget id="com.matrixlms.app" version="1.00" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>MATRIX LMS</name>
     <description>
-        Get the full functionality of MATRIX LMS by using the Android Mobile App.
+        Get the full functionality of MATRIX LMS by using the Windows Mobile App.
     </description>
     <author email="engineering@matrixlms.com" href="https://www.matrixlms.com">
         Cypher Learning
     </author>
     <content src="index.html" />
     <preference name="CypherLearning.MATRIXLMS" value="PhonegapBuild.PGBDeveloper" />
+    <preference name="windows-appx-target" value="uap" />
     <preference name="OverrideUserAgent" value="Mozilla/5.0 (Linux; Android 4.4.2; HTC Desire 526G dual sim Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.83 Mobile Safari/537.36" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="14" />
