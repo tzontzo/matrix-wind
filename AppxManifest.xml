@@ -3,7 +3,7 @@
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
   <Identity Name="CypherLearning.MATRIXLMS"
             Publisher="CN=D9D7F983-AB7E-4F49-BC9A-052F6B19150C"
-            Version="1.00"
+            Version="1.0.0.0"
   />
 
   <Properties>
