@@ -12,7 +12,6 @@
     <preference name="windows-appx-target" value="uap" />
     <preference name="OverrideUserAgent" value="Mozilla/5.0 (Linux; Android 4.4.2; HTC Desire 526G dual sim Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.83 Mobile Safari/537.36" />
     <preference name="DisallowOverscroll" value="true" />
-    <preference name="windows-arch" value="anycpu" />
     <preference name="android-minSdkVersion" value="14" />
     <preference name="phonegap-version" value="cli-7.0.1" />
     <icon src="icon.png" />
