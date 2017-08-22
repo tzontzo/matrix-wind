@@ -8,7 +8,6 @@
         Cypher Learning
     </author>
     <content src="index.html" />
-    <preference name="phonegap-version" value="cli-6.1.0" />
     <preference name="windows-arch" value="anycpu" />
     <preference name="windows-identity-name" value="CypherLearning.MATRIXLMS"/>
     <preference name="windows-appx-target" value="uap" />
