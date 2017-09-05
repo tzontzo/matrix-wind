@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -79,7 +80,8 @@ var app = {
     reloadPage: function() {
         var contentFrame = document.getElementById('contentFrame');
         app.toggleLoader(true);
-        contentFrame.contentWindow.location.reload();
+        //contentFrame.contentWindow.location.reload();
+        document.getElementById('contentFrame').contentWindow.postMessage("{\"reloadPage\":\"1\"}","*");
     },
     // Show loading animation
     toggleLoader: function(state) {
@@ -106,10 +108,10 @@ var app = {
             alertBlock.innerHTML = statusMsg;
         }
     },
-    docLoaded: function() {
+    //docLoaded: function() {
         //clearTimeout(connectionTimeout);
-        var contentFrame = document.getElementById('contentFrame');
-        contentFrame.contentDocument.body.onunload = app.loadingStart;
+       // var contentFrame = document.getElementById('contentFrame');
+       // contentFrame.contentDocument.body.onunload = app.loadingStart;
         //document.getElementById("versionBlock").style.display = 'none';
 
         // Redirect to the last URL.
@@ -117,7 +119,7 @@ var app = {
          app.toggleLoader(true);
          contentFrame.contentWindow.location = loginUrl;
          }*/
-    },
+   // },
     checkConnection: function() {
         var networkState = navigator.connection.type;
 
@@ -229,7 +231,7 @@ var app = {
         console.log('Sending viewport data');
         isPageLoaded = true;
         var contentFrame = document.getElementById('contentFrame');
-        contentFrame.contentDocument.body.onunload = app.loadingStart;
+       // contentFrame.contentDocument.body.onunload = app.loadingStart;
         $('#alertBlock').html('');
         app.toggleLoader(false);
         $(window).scrollTop(0);
@@ -264,39 +266,12 @@ var app = {
                 if (data.action == 'login') {
                     //console.log('Logging in');
                     loggedIn = true;
-                    if (!navigator.userAgent.match(/Android/i)) {
+                    if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
                         $('header').show();
                     }
                     var contentFrame = document.getElementById('contentFrame');
-
-                    if (!wentBack && !wentForward) {
-                        //console.log("running history code");
-                        pageHistoryMarker++;
-                        if (pageHistoryMarker < pageHistory.length) {
-                            pageHistory.splice(pageHistoryMarker, 20);
-                        }
-                        pageHistory.push(contentFrame.contentWindow.location.href);
-                        if (pageHistory.length > 20) {
-                            pageHistory.shift();
-                            pageHistoryMarker--;
-                        }
-                    }
-                    wentBack = false;
-                    wentForward = false;
-                    //alert("history length: "+pageHistory.length+" - history marker: "+pageHistoryMarker);
-                    if (pageHistoryMarker > 0) {
-                        canGoBack = true;
-                    }
-                    if (pageHistoryMarker == 0) {
-                        canGoBack = false;
-                    }
-                    if (pageHistoryMarker < pageHistory.length - 1) {
-                        canGoForward = true;
-                    }
-                    if (pageHistoryMarker == pageHistory.length - 1) {
-                        canGoForward = false;
-                    }
-
+                    document.getElementById('contentFrame').contentWindow.postMessage("{\"getPageURL\":\"1\"}", "*");
+                  
                     app.updateStatusMessage('Please wait...');
                     if (fileToUpload.length) {
                         $('#contentFrame').attr('src', schoolProtocol + '://' + schoolDomain + '/resources/upload_mobile/?filename=' + fileToUpload);
@@ -308,16 +283,7 @@ var app = {
                     $('#arrowLeft, #arrowRight').show();
                     $('#arrowLeft, #arrowRight').blur();
                     $('#homeButton').show();
-                    if (canGoBack) {
-                        app.enableLeftArrow();
-                    } else {
-                        app.disableLeftArrow();
-                    }
-                    if (canGoForward) {
-                        app.enableRightArrow();
-                    } else {
-                        app.disableRightArrow();
-                    }
+                   
                     var loginUsernameTemp = store.getItem('loginUsernameTemp');
                     var loginPasswordTemp = store.getItem('loginPasswordTemp');
                     console.log('Looking for login data in local storage, loginUsernameTemp: ' + loginUsernameTemp + ', loginPasswordTemp: ' + loginPasswordTemp);
@@ -452,7 +418,7 @@ var app = {
                 }
                 break;
             case 'courseToolbar':
-                if (!navigator.userAgent.match(/Android/i)) {
+                if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
                     if (typeof data.content != 'undefined') {
                         $('#courseToolbar').html(data.content);
                         $('#courseToolbar').css({
@@ -500,7 +466,7 @@ var app = {
                 break;
             case 'faceboxClosed':
                 if (data.content == '1') {
-                    if ($('nav#leftColumn').attr('stays-visible') == 'yes' && !navigator.userAgent.match(/Android/i)) {
+                    if ($('nav#leftColumn').attr('stays-visible') == 'yes' && navigator.userAgent.match(/(iPad|iPhone)/i)) {
                         $('nav#leftColumn').show();
                     }
                     $('nav#leftColumn').removeAttr('stays-visible');
@@ -710,6 +676,50 @@ var app = {
                     ssoWindow.close();
                 }
                 break;
+            case 'loadingStart':
+                app.loadingStart();
+                break;
+
+            case 'historyPageURL':
+                if (!wentBack && !wentForward) {
+                    console.log("running history code");
+                    pageHistoryMarker++;
+                    if (pageHistoryMarker < pageHistory.length) {
+                        pageHistory.splice(pageHistoryMarker, 20);
+                    }
+                    pageHistory.push(data.value);
+
+                    if (pageHistory.length > 20) {
+                        pageHistory.shift();
+                        pageHistoryMarker--;
+                    }
+                }
+                wentBack = false;
+                wentForward = false;
+                console.log("history length: "+pageHistory.length+" - history marker: "+pageHistoryMarker);
+                if (pageHistoryMarker > 0) {
+                    canGoBack = true;
+                }
+                if (pageHistoryMarker == 0) {
+                    canGoBack = false;
+                }
+                if (pageHistoryMarker < pageHistory.length - 1) {
+                    canGoForward = true;
+                }
+                if (pageHistoryMarker == pageHistory.length - 1) {
+                    canGoForward = false;
+                }
+                if (canGoBack) {
+                    app.enableLeftArrow();
+                } else {
+                    app.disableLeftArrow();
+                }
+                if (canGoForward) {
+                    app.enableRightArrow();
+                } else {
+                    app.disableRightArrow();
+                }
+                break;
             default:
                 return;
                 break;
@@ -720,16 +730,16 @@ var app = {
     },
     onAppLaunch: function() {
         //console.log('checking if file was selected');
-        if (!navigator.userAgent.match(/Android/i)) {
+        if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, app.gotFS, app.fail);
         }
         canLoadNotification = true;
         setTimeout(function(){
-        	canLoadNotification = false;
+            canLoadNotification = false;
         }, 1000);
     },
     onPause: function() {
-        if (!navigator.userAgent.match(/Android/i)) {
+        if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, app.gotFSforDelete, app.fail);
         }
     },
@@ -850,7 +860,7 @@ var app = {
             $('nav#user-menu').trigger('open.mm');
         });
         $('header *').click(function(){
-        	app.disableRefreshHeader();
+            app.disableRefreshHeader();
         });
     },
     refreshLeftNav: function() {
@@ -860,7 +870,7 @@ var app = {
         hookFlyOutEvents('thinMainNav');
     },
     showLeftNav: function() {
-        if (!navigator.userAgent.match(/Android/i)) {
+        if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
             $('nav#leftColumn').show();
         }
     },
@@ -880,7 +890,7 @@ var app = {
                 'position': 'static',
                 'margin-left': $('nav#user-menu').outerWidth()
             });
-            if (!navigator.userAgent.match(/Android/i) && parseFloat(window.device.version) < 8.0) {
+            if (navigator.userAgent.match(/(iPad|iPhone)/i) && parseFloat(window.device.version) < 8.0) {
                 if ($('nav#user-menu #btn-root').is(':visible')) {
                     $('nav#user-menu #btn-root').click();
                     setTimeout(function() {
@@ -906,63 +916,63 @@ var app = {
         $('#contentFrame').attr('src', schoolProtocol + '://' + schoolDomain + '/');
     },
     registerNotifications: function() {
-    	if (navigator.userAgent.match(/Android/i)) {
-    		var options = {
-    			android: {
-					senderID: androidSenderID,
-					clearBadge: true
-				}
-    		};
-    	} else {
-    		var options = {
-				ios: {
-					alert: true,
-					badge: true,
-					sound: true,
-					clearBadge: true
-				}
-    		};
-    	}
-		
-		var push = PushNotification.init(options);
-		
+        if (navigator.userAgent.match(/Android/i)) {
+            var options = {
+                android: {
+                    senderID: androidSenderID,
+                    clearBadge: true
+                }
+            };
+        } else {
+            var options = {
+                ios: {
+                    alert: true,
+                    badge: true,
+                    sound: true,
+                    clearBadge: true
+                }
+            };
+        }
+        
+        var push = PushNotification.init(options);
+        
         var pushToken = store.getItem('pushToken');
         if (pushToken) {
             app.storeToken(pushToken);
         } else {
             try {
-				push.on('registration', function(data) {
-					store.setItem('pushToken', data.registrationId);
+                push.on('registration', function(data) {
+                    store.setItem('pushToken', data.registrationId);
                     app.storeToken(data.registrationId);
-				});
+                });
             } catch (err) {
                 console.log("Error: " + err.message);
             }
         }
         
         push.on('notification', app.onNativeNotification);
-		push.on('error', function(e) {
-			console.log("Push plugin error" + e.message);
-		});
+        push.on('error', function(e) {
+            console.log("Push plugin error" + e.message);
+        });
     },
     onNativeNotification: function(data) {
-    	if(canLoadNotification){
-    		var item_id = /\(ID: ([0-9]*)\)$/.exec(data.message);
-			var currentSchool = store.getItem('currentSchool');
-			console.log('is alert, item_id: ' + JSON.stringify(item_id));
-			if (data.message.charAt(0) == 'M') {
-				console.log('loading: ' + currentSchool.replace('?mobile_app=true', 'inbox/show?message=' + item_id[1]));
-				app.toggleLoader(true);
-				app.updateStatusMessage('Loading message...');
-				$('#contentFrame').attr('src', currentSchool.replace('?mobile_app=true', 'inbox/show?message=' + item_id[1]));
-			} else {
-				console.log('loading: ' + currentSchool.replace('?mobile_app=true', 'notifications/show?notification=' + item_id[1]));
-				app.toggleLoader(true);
-				app.updateStatusMessage('Loading notification...');
-				$('#contentFrame').attr('src', currentSchool.replace('?mobile_app=true', 'notifications/show?notification=' + item_id[1]));
-			}
-			canLoadNotification = false;
-    	}
+        if(canLoadNotification){
+            var item_id = /\(ID: ([0-9]*)\)$/.exec(data.message);
+            var currentSchool = store.getItem('currentSchool');
+            console.log('is alert, item_id: ' + JSON.stringify(item_id));
+            if (data.message.charAt(0) == 'M') {
+                console.log('loading: ' + currentSchool.replace('?mobile_app=true', 'inbox/show?message=' + item_id[1]));
+                app.toggleLoader(true);
+                app.updateStatusMessage('Loading message...');
+                $('#contentFrame').attr('src', currentSchool.replace('?mobile_app=true', 'inbox/show?message=' + item_id[1]));
+            } else {
+                console.log('loading: ' + currentSchool.replace('?mobile_app=true', 'notifications/show?notification=' + item_id[1]));
+                app.toggleLoader(true);
+                app.updateStatusMessage('Loading notification...');
+                $('#contentFrame').attr('src', currentSchool.replace('?mobile_app=true', 'notifications/show?notification=' + item_id[1]));
+            }
+            canLoadNotification = false;
+        }
     },
     storeLoginCredentials: function(fileSystem) {
         console.log('storeLoginCredentials');
@@ -1098,12 +1108,12 @@ var app = {
         writer.write("");
     },
     disableRefreshHeader: function() {
-    	console.log('disable refresh header');
-    	canRefreshHeader = false;
+        console.log('disable refresh header');
+        canRefreshHeader = false;
     },
     enableRefreshHeader: function() {
-    	console.log('enable refresh header');
-    	canRefreshHeader = true;
+        console.log('enable refresh header');
+        canRefreshHeader = true;
     }
 };
 
@@ -1112,7 +1122,7 @@ function popup_clicked(element) {
     closeThinNav();
     $('nav#leftColumn').hide();
     setTimeout(function() {
-        if (!navigator.userAgent.match(/Android/i)) {
+        if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
             $('nav#leftColumn').show();
         }
     }, 50);
@@ -1181,7 +1191,7 @@ function inputFocusedActions() {
         });
     }
     $('#infoBar').hide();
-    if (!navigator.userAgent.match(/Android/i) && parseFloat(window.device.version) >= 7.0) {
+    if (navigator.userAgent.match(/(iPad|iPhone)/i) && parseFloat(window.device.version) >= 7.0) {
         setTimeout(function() {
             $('#chatContainer').css('bottom', -100)
         }, 100);
@@ -1457,7 +1467,7 @@ $(document).ready(function() {
             $('header').css('width', $(window).width());
             originalHeight = $(window).height();
             originalWidth = $(window).width();
-        } else if (!navigator.userAgent.match(/Android/i)) {
+        } else if (navigator.userAgent.match(/(iPad|iPhone)/i)) {
             if ($(window).height() < (originalHeight - 50)) {
                 console.log('window smaller');
                 inputFocusedActions();
